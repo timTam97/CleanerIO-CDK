@@ -12,14 +12,15 @@ export class CleanedCdkStack extends cdk.Stack {
 
         const cleaningRecordTable = new dynamodb.Table(this, "CleaningTable", {
             partitionKey: {
-                name: "TrainID",
+                name: "trainID",
                 type: dynamodb.AttributeType.STRING,
             },
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
             sortKey: {
-                name: "startDate",
+                name: "startTime",
                 type: dynamodb.AttributeType.STRING,
             },
+            removalPolicy: cdk.RemovalPolicy.DESTROY
         });
 
         const ingressFunction = new lambda.Function(this, "IngressFunction", {
@@ -60,8 +61,6 @@ export class CleanedCdkStack extends cdk.Stack {
             path: "/view",
             methods: [apigw.HttpMethod.GET],
         });
-
-        // The code that defines your stack goes here
     }
 }
 
