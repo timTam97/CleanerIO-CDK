@@ -1,8 +1,6 @@
-# Welcome to your CDK TypeScript project!
+# CleanerIO-CDK
 
-This is a blank project for TypeScript development with CDK.
-
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+Welcome! This repo contains the backend infrastructure and Lambda functions for Cleaner.io.
 
 ## Useful commands
 
