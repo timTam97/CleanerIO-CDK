@@ -20,7 +20,7 @@ export class CleanedCdkStack extends cdk.Stack {
                 name: "startTime",
                 type: dynamodb.AttributeType.STRING,
             },
-            removalPolicy: cdk.RemovalPolicy.DESTROY
+            removalPolicy: cdk.RemovalPolicy.DESTROY,
         });
 
         const ingressFunction = new lambda.Function(this, "IngressFunction", {
@@ -41,8 +41,18 @@ export class CleanedCdkStack extends cdk.Stack {
             },
         });
 
+        const listLogsFunction = new lambda.Function(this, "ListLogsFunction", {
+            code: new lambda.AssetCode("lib/src/listlogs"),
+            handler: "app.handler",
+            runtime: lambda.Runtime.PYTHON_3_8,
+            environment: {
+                TABLE_NAME: cleaningRecordTable.tableName,
+            },
+        });
+
         cleaningRecordTable.grantReadWriteData(ingressFunction);
         cleaningRecordTable.grantReadData(viewLogsFunction);
+        cleaningRecordTable.grantReadData(listLogsFunction);
 
         api.addRoutes({
             integration: new apigw_integrations.LambdaProxyIntegration({
@@ -59,6 +69,15 @@ export class CleanedCdkStack extends cdk.Stack {
                 payloadFormatVersion: apigw.PayloadFormatVersion.VERSION_2_0,
             }),
             path: "/view",
+            methods: [apigw.HttpMethod.GET],
+        });
+
+        api.addRoutes({
+            integration: new apigw_integrations.LambdaProxyIntegration({
+                handler: listLogsFunction,
+                payloadFormatVersion: apigw.PayloadFormatVersion.VERSION_2_0,
+            }),
+            path: "/list",
             methods: [apigw.HttpMethod.GET],
         });
     }
