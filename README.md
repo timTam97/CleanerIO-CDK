@@ -1,6 +1,6 @@
 # CleanerIO-CDK
 
-Welcome! This repo contains the backend infrastructure and Lambda functions for Cleaner.io.
+Welcome! This repo contains the backend AWS infrastructure and Lambda functions for Cleaner.io.
 
 Cleaner.io is a quick and secure way for cleaners of public transport to verify when they last cleaned the train, tram, or bus and allows for total transparency and assurance for passengers.
 
