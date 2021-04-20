@@ -50,9 +50,23 @@ export class CleanedCdkStack extends cdk.Stack {
             },
         });
 
+        const passengerViewLogsFunction = new lambda.Function(
+            this,
+            "PassengerViewLogsFunction",
+            {
+                code: new lambda.AssetCode("lib/src/passengerview"),
+                handler: "app.handler",
+                runtime: lambda.Runtime.PYTHON_3_8,
+                environment: {
+                    TABLE_NAME: cleaningRecordTable.tableName,
+                },
+            }
+        );
+
         cleaningRecordTable.grantReadWriteData(ingressFunction);
         cleaningRecordTable.grantReadData(viewLogsFunction);
         cleaningRecordTable.grantReadData(listLogsFunction);
+        cleaningRecordTable.grantReadData(passengerViewLogsFunction);
 
         api.addRoutes({
             integration: new apigw_integrations.LambdaProxyIntegration({
@@ -80,17 +94,18 @@ export class CleanedCdkStack extends cdk.Stack {
             path: "/list",
             methods: [apigw.HttpMethod.GET],
         });
+
+        api.addRoutes({
+            integration: new apigw_integrations.LambdaProxyIntegration({
+                handler: passengerViewLogsFunction,
+                payloadFormatVersion: apigw.PayloadFormatVersion.VERSION_2_0,
+            }),
+            path: "/passengerview/{code}",
+            methods: [apigw.HttpMethod.GET],
+        });
     }
 }
 
 const app = new cdk.App();
 new CleanedCdkStack(app, "CleanedCdkStack");
 app.synth();
-
-// start time
-//  end time
-// person who cleaned
-// date
-// fleet string
-// train number
-// carraige number

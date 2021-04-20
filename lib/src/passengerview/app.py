@@ -1,0 +1,268 @@
+"""
+hello
+"""
+import json
+import os
+
+import boto3
+from boto3.dynamodb.conditions import Key
+
+logs_table = boto3.resource("dynamodb").Table(os.environ.get("TABLE_NAME"))
+
+
+def handler(event, context):
+    print(event)
+    # Identifying the carriage:
+    # BS = bus
+    # TM = tram
+    # TN = train
+    # TM000111
+    # Vehicle type | trainID | carriage
+    code = event["pathParameters"]["code"]
+    trainID = code[2:5]
+
+    query_result = logs_table.query(KeyConditionExpression=Key("trainID").eq(trainID))
+    final_item = query_result["Items"][0]
+    print(final_item)
+
+    fleet_number = final_item["fleetID"]
+    train_id = final_item["trainID"]
+    carriage = final_item["carriage"]
+
+    if final_item["transportType"] == "tram":
+        colour = "tramColor"
+        url = "https://i.imgur.com/N3YTZO4.png"
+    elif final_item["transportType"] == "bus":
+        colour = "busColor"
+        url = "https://i.imgur.com/BZ59XKd.png"
+    elif final_item["transportType"] == "train":
+        colour = "trainColor"
+        url = "https://i.imgur.com/slS4zVY.png"
+
+    html_body = """
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <title>Cleaning Lookup | Cleaner.io</title>
+  </head>
+  <body>
+    <div id="centerBar">
+      <h2>You are on...</h2>
+      <div class="{} card">
+        <div class="cardIcon"><img src="{}" alt=""></div>
+        <div class="cardDescription">Fleet {}<br>{} #{}<br>Carriage #{}</div>
+      </div>
+      <div class="detailCard">
+        <div>
+          <div><span class="detailHeader">Clean Date</span><br>16/4/2021</div>
+          <div class="ralign"><span class="detailHeader">Clean Time</span><br>23:34</div>
+        </div>
+        <div>
+          Deep cleans involve sanisation of high touch areas, such as train handles, door buttons and seats.
+        </div>
+      </div>
+      <h1 class="feedBackHeaders">Provide Feedback</h1>
+      <div class="feedbackCard">
+        <div class="detailHeader feedbackCardText">Rate the level of cleanliness on a scale of 1-10:</div>
+        <div class="slidecontainer">
+          <input type="range" min="1" max="10" value="5" class="slider" id="myRange">
+          <textarea id="w3review" name="w3review" rows="4" cols="50" placeholder="Anything else to note?"></textarea>
+        </div>
+      </div>
+      <h1 class="feedBackHeaders malign">Thank you for using cleaner.io</h1>
+    </h1>
+    <div id='bg'></div>
+  </body>
+  <style>
+    textarea {{
+      resize: none;
+      width: 95%;
+      margin-left: auto;
+      margin-right: auto;
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+      background-color: #F7F8FB;
+      color: rgba(33, 34, 34, 0.5);
+      padding: 0.5em;
+      border: 0em ;
+      border-radius: 0.1em;
+    }}
+    .feedbackCard {{
+      width: 100%;
+      border-radius: 0.5em;
+      box-shadow: 0px 4px 5px rgba(0, 0, 0, 0.25);
+    }}
+    .feedbackCardText {{
+      margin: 1em;
+    }}
+    .ralign {{
+      text-align: end;
+    }}
+    .malign {{
+      text-align: center;
+    }}
+    .feedBackHeaders {{
+      width: 100%;
+      color: #D72D2E;
+      margin: 0.4em 0;
+    }}
+    .detailHeader {{
+      color: rgba(51, 52, 52, 0.5);
+    }}
+    .cardDescription {{
+      text-align: right;
+      color: white;
+      margin: 0;
+      margin-right: 2em;
+      padding: 0;
+      font-weight: 600;
+      /* font-weight: bold; */
+    }}
+    .card {{
+      align-items: center;
+      width: 100%;
+      border-radius: 0.5em;
+      /* padding: 0.5em 0; */
+      display: flex;
+      justify-content: space-between;
+      /* background: #3070C7; */
+      box-shadow: 0px 4px 5px rgba(0, 0, 0, 0.25);
+      margin-bottom: 2vh;
+    }}
+    .detailCard {{
+      width: 100%;
+      border-radius: 0.5em;
+      /* padding: 0.5em 0; */
+      display: flex;
+      flex-direction: column;
+      /* justify-content: space-between; */
+      /* background: #3070C7; */
+      background-color: white;
+      box-shadow: 0px 4px 5px rgba(0, 0, 0, 0.25);
+    }}
+    .detailCard > div:first-child {{
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+      display: flex;
+      justify-content: space-between;
+    }}
+    .detailCard > div:first-child > div {{
+      margin: 0em 1em;
+    }}
+    .detailCard > div:last-child {{
+      margin: 0.5em;
+    }}
+    .card img {{
+      width: 50px;
+      height: 50px;
+      position: relative;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
+      padding: 0;
+    }}
+    h2 {{
+      color: white;
+      align-self: flex-start;
+    }}
+    body {{
+      font-family: 'Open Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-image: url("https://i.imgur.com/24gzyF5.png");
+      background-repeat: repeat-x;
+      z-index: 1;
+    }}
+    .cardIcon {{
+      border-radius: 50%;
+      height: 80px;
+      width: 80px;
+      background-color: white;
+      margin-left: 1em;
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+
+    }}
+    .trainColor {{
+      background-color: #3070C7;
+    }}
+    .busColor {{
+      background-color: #EF8933;
+    }}
+    .tramColor {{
+      background-color: #88BC41;
+    }}
+    #centerBar {{
+      /* padding: 5%; */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      /* padding: 2em; */
+      padding-top: 2vh;
+      margin: 0;
+      width: 80%;
+      height: 98vh;
+      margin-left: auto;
+      margin-right: auto;
+      max-width: 20em;
+      /* background-color: black; */
+      z-index: -1;
+    }}
+    .slidecontainer {{
+      width: 90%; /* Width of the outside container */
+      margin-left: auto;
+      margin-right: auto;
+    }}
+
+.slider {{
+  -webkit-appearance: none;
+  width: 100%;
+  height: 10px;
+  border-radius: 5px;  
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}}
+
+.slider::-webkit-slider-thumb {{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%; 
+  background: #D72D2E;
+  cursor: pointer;
+}}
+
+.slider::-moz-range-thumb {{
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #D72D2E;
+  cursor: pointer;
+}}
+  </style>
+</html>
+    """.format(
+        colour, url, fleet_number, final_item["transportType"], train_id, carriage
+    )
+    return {
+        "isBase64Encoded": False,
+        "statusCode": 200,
+        "body": html_body,
+        "headers": {"Content-Type": "text/html"},
+    }
