@@ -22,6 +22,7 @@ def handler(event, context):
             "carriage": payload["carriage"],  # (number)
             "endTime": payload["endTime"],
             "usedSupplies": payload["usedSupplies"],
+            "transportType": payload["transportType"],
         }
     )
     return {"isBase64Encoded": False, "statusCode": 200, "body": json.dumps("hi")}
