@@ -4,6 +4,22 @@ import * as lambda from "@aws-cdk/aws-lambda";
 import * as apigw_integrations from "@aws-cdk/aws-apigatewayv2-integrations";
 import * as dynamodb from "@aws-cdk/aws-dynamodb";
 
+interface lambdaNames {
+    addLogs: string;
+    viewLogs: string;
+    listLogs: string;
+    passengerViewLog: string;
+}
+
+const generatePaths = (lang: "py" | "ts"): lambdaNames => {
+    return {
+        addLogs: `lib/src/${lang}/addlogs`,
+        viewLogs: `lib/src/${lang}/viewlogs`,
+        listLogs: `lib/src/${lang}/listlogs`,
+        passengerViewLog: `lib/src/${lang}/passengerview`,
+    };
+};
+
 export class CleanedCdkStack extends cdk.Stack {
     constructor(app: cdk.App, id: string) {
         super(app, id);
@@ -23,8 +39,10 @@ export class CleanedCdkStack extends cdk.Stack {
             removalPolicy: cdk.RemovalPolicy.DESTROY,
         });
 
-        const ingressFunction = new lambda.Function(this, "IngressFunction", {
-            code: new lambda.AssetCode("lib/src/ingress"),
+        const codePaths = generatePaths("py");
+
+        const addLogsFunction = new lambda.Function(this, "AddLogsFunction", {
+            code: new lambda.AssetCode(codePaths.addLogs),
             handler: "app.handler",
             runtime: lambda.Runtime.PYTHON_3_8,
             environment: {
@@ -33,7 +51,7 @@ export class CleanedCdkStack extends cdk.Stack {
         });
 
         const viewLogsFunction = new lambda.Function(this, "ViewLogsFunction", {
-            code: new lambda.AssetCode("lib/src/viewlogs"),
+            code: new lambda.AssetCode(codePaths.viewLogs),
             handler: "app.handler",
             runtime: lambda.Runtime.PYTHON_3_8,
             environment: {
@@ -42,7 +60,7 @@ export class CleanedCdkStack extends cdk.Stack {
         });
 
         const listLogsFunction = new lambda.Function(this, "ListLogsFunction", {
-            code: new lambda.AssetCode("lib/src/listlogs"),
+            code: new lambda.AssetCode(codePaths.listLogs),
             handler: "app.handler",
             runtime: lambda.Runtime.PYTHON_3_8,
             environment: {
@@ -54,7 +72,7 @@ export class CleanedCdkStack extends cdk.Stack {
             this,
             "PassengerViewLogsFunction",
             {
-                code: new lambda.AssetCode("lib/src/passengerview"),
+                code: new lambda.AssetCode(codePaths.passengerViewLog),
                 handler: "app.handler",
                 runtime: lambda.Runtime.PYTHON_3_8,
                 environment: {
@@ -63,14 +81,14 @@ export class CleanedCdkStack extends cdk.Stack {
             }
         );
 
-        cleaningRecordTable.grantReadWriteData(ingressFunction);
+        cleaningRecordTable.grantReadWriteData(addLogsFunction);
         cleaningRecordTable.grantReadData(viewLogsFunction);
         cleaningRecordTable.grantReadData(listLogsFunction);
         cleaningRecordTable.grantReadData(passengerViewLogsFunction);
 
         api.addRoutes({
             integration: new apigw_integrations.LambdaProxyIntegration({
-                handler: ingressFunction,
+                handler: addLogsFunction,
                 payloadFormatVersion: apigw.PayloadFormatVersion.VERSION_2_0,
             }),
             path: "/add",
