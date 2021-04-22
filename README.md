@@ -4,6 +4,8 @@ Welcome! This repo contains the backend AWS infrastructure and Lambda functions 
 
 Cleaner.io is a quick and secure way for cleaners of public transport to verify when they last cleaned the train, tram, or bus and allows for total transparency and assurance for passengers.
 
+Check out our project on [Devpost](https://devpost.com/software/cleaned), and also our [frontend app](https://github.com/timTam97/CleanerIO-Frontend).
+
 ## Infrastructure
 Basically, it's a HTTP API backed by some Lambdas. These Lambda functions talk to a dynamoDB table which stores the cleaning logs.
 
