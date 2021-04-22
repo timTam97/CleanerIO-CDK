@@ -4,6 +4,11 @@ Welcome! This repo contains the backend AWS infrastructure and Lambda functions 
 
 Cleaner.io is a quick and secure way for cleaners of public transport to verify when they last cleaned the train, tram, or bus and allows for total transparency and assurance for passengers.
 
+## Infrastructure
+Basically, it's a HTTP API backed by some Lambdas. These Lambda functions talk to a dynamoDB table which stores the cleaning logs.
+
+<img src="https://raw.githubusercontent.com/timTam97/CleanerIO-CDK/master/diagram.png" width=50% height=50%>
+
 ## Useful commands
 
  * `npm run build`   compile typescript to js
@@ -12,3 +17,4 @@ Cleaner.io is a quick and secure way for cleaners of public transport to verify 
  * `cdk deploy`      deploy this stack to your default AWS account/region
  * `cdk diff`        compare deployed stack with current state
  * `cdk synth`       emits the synthesized CloudFormation template
+  
