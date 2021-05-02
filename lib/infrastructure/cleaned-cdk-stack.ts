@@ -9,6 +9,7 @@ interface lambdaNames {
     viewLogs: string;
     listLogs: string;
     passengerViewLog: string;
+    runtime: lambda.Runtime;
 }
 
 const generatePaths = (lang: "py" | "ts"): lambdaNames => {
@@ -17,6 +18,7 @@ const generatePaths = (lang: "py" | "ts"): lambdaNames => {
         viewLogs: `lib/src/${lang}/viewlogs`,
         listLogs: `lib/src/${lang}/listlogs`,
         passengerViewLog: `lib/src/${lang}/passengerview`,
+        runtime: lang === "py" ? lambda.Runtime.PYTHON_3_8 : lambda.Runtime.NODEJS_14_X
     };
 };
 
@@ -44,7 +46,7 @@ export class CleanedCdkStack extends cdk.Stack {
         const addLogsFunction = new lambda.Function(this, "AddLogsFunction", {
             code: new lambda.AssetCode(codePaths.addLogs),
             handler: "app.handler",
-            runtime: lambda.Runtime.PYTHON_3_8,
+            runtime: codePaths.runtime,
             environment: {
                 TABLE_NAME: cleaningRecordTable.tableName,
             },
@@ -62,7 +64,7 @@ export class CleanedCdkStack extends cdk.Stack {
         const listLogsFunction = new lambda.Function(this, "ListLogsFunction", {
             code: new lambda.AssetCode(codePaths.listLogs),
             handler: "app.handler",
-            runtime: lambda.Runtime.PYTHON_3_8,
+            runtime: codePaths.runtime,
             environment: {
                 TABLE_NAME: cleaningRecordTable.tableName,
             },
@@ -74,7 +76,7 @@ export class CleanedCdkStack extends cdk.Stack {
             {
                 code: new lambda.AssetCode(codePaths.passengerViewLog),
                 handler: "app.handler",
-                runtime: lambda.Runtime.PYTHON_3_8,
+                runtime: codePaths.runtime,
                 environment: {
                     TABLE_NAME: cleaningRecordTable.tableName,
                 },
